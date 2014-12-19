@@ -13,7 +13,7 @@ class DOM {
         if(!$html or !is_string($html)) $html = "<html></html>";
         if(is_null($pointer)) $pointer = new self();
         $pointer -> html = $html;
-        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom -> preserveWhiteSpace = false;
         libxml_use_internal_errors(true);
         $dom -> loadHTML('<?xml encoding="utf-8" ?>' . $html);
@@ -61,8 +61,8 @@ class DOM {
     private function toArray($node, $level) {
         $array = array();
         if(!$node) return array();
-        if($node instanceof DOMAttr) return $node -> value;
-        if($node instanceof DOMNodeList) {
+        if($node instanceof \DOMAttr) return $node -> value;
+        if($node instanceof \DOMNodeList) {
             foreach($node as $n) $array[] = $this -> toArray($n, $level);
             return $array;
         }
