@@ -19,7 +19,7 @@ class DOM {
         $dom -> loadHTML('<?xml encoding="utf-8" ?>' . $html);
         libxml_clear_errors();
         $pointer -> _dom = $dom;
-        $pointer -> _xpath = new DOMXpath($pointer -> _dom);
+        $pointer -> _xpath = new \DOMXpath($pointer -> _dom);
         return $pointer;
     }
     public function attr($attr) { return $this -> find("//@{$attr}", 0); }
