@@ -1,0 +1,26 @@
+{
+    "name": "ejz/dom",
+    "description": "DOM is native HTML parsing library for PHP. Supports XPath syntax.",
+    "keywords": ["ejz", "dom", "php", "native", "xpath"],
+    "license": "WTFPL",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Ejz/DOM"
+        }
+    ],
+    "authors": [
+        {
+            "name": "Ejz",
+            "email": "ejz@ya.ru",
+            "homepage": "http://ejz.ru/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "ejz/core": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {"Ejz\\": "src/Ejz"}
+    }
+}
