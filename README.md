@@ -25,3 +25,23 @@ Now install dependencies:
 ```bash
 $ php composer.phar install
 ```
+
+Let's begin:
+
+```php
+<?php
+
+define('ROOT', __DIR__);
+require(ROOT . '/vendor/autoload.php');
+
+use Ejz\DOM;
+
+$yahoo = file_get_contents("http://yahoo.com/");
+$dom = new DOM($yahoo);
+echo $dom -> find('//title', 0), chr(10);
+echo $dom -> find('//title/text()', 0), chr(10);
+```
+
+```
+<title>
+```
