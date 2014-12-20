@@ -43,6 +43,16 @@ echo $dom -> find('//title/text()', 0), chr(10);
 ```
 
 ```
-<title>Yahoo!  </title>
-Yahoo!
+<title>Yahoo</title>
+Yahoo
 ```
+
+Notice that whatever you select by XPath library returns string or array of strings. No objects!
+
+### CI: Codeship
+
+[![Codeship Status for Ejz/DOM](https://codeship.com/projects/cf767e50-4a4e-0132-ff36-2ed7adbe9f3c/status)](https://codeship.com/projects/46255)
+
+### CI: Travis
+
+[![Travis Status for Ejz/DOM](https://travis-ci.org/Ejz/DOM.svg?branch=master)](https://travis-ci.org/Ejz/DOM)
