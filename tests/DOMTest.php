@@ -11,12 +11,12 @@ class DOMTest extends PHPUnit_Framework_TestCase {
         $HTML = <<<HTML
 <html>
 <meta equiv="Content-Type" content="text/html; charset=utf-8">
-<a href="findme.html">Регистрация</a>
+<a href="findme.html"> Регистрация </a>
 <div class="class1 escape class2">
-    &lt;&amp;&gt;
-    <&>
-    < & >
-    &copy;
+    <span> &lt;&amp;&gt; </span>
+    <span> <&> </span>
+    <span> < & > </span>
+    <span> &copy; </span>
 </div>
 <div class="attr" attr="&quot;'&lt; &amp; &gt;">
 </div>
@@ -44,8 +44,22 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 HTML;
         return $HTML;
     }
-    public function testMeta() {
+    public function testHTMLCount() {
         $dom = new DOM($this -> getHTML());
         $this -> assertEquals($dom -> count('/html'), 1);
+    }
+    public function testEncoding() {
+        $dom = new DOM($this -> getHTML());
+        $this -> assertEquals($dom -> find("//a[@href='findme.html']/text()", 0), "Регистрация");
+    }
+    public function testEscape() {
+        $dom = new DOM($this -> getHTML());
+        $escape = $dom -> find("//div[class(escape)]/span/text()");
+        $this -> assertEquals($escape[0], "<&>");
+        $this -> assertEquals($escape[1], "<&>");
+        $this -> assertEquals($escape[2], "< & >");
+        $this -> assertEquals($escape[3], "©");
+        $attr = $dom -> find("//div[class(attr)]/@attr", 0);
+        $this -> assertEquals($attr, "\"'< & >");
     }
 }
