@@ -14,7 +14,7 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 <a href="findme.html"> Регистрация </a>
 <div class="class1 escape class2">
     <span> &lt;&amp;&gt; </span>
-    <span> < & > </span>
+    <span> asd > asd asd & </span>
     <span> &copy; </span>
 </div>
 <div class="attr" attr="&quot;'&lt; &amp; &gt;">
@@ -55,14 +55,29 @@ HTML;
         $dom = new DOM($this -> getHTML());
         $escape = $dom -> find("//div[class(escape)]/span/text()");
         $this -> assertEquals($escape[0], "<&>");
-        $this -> assertEquals($escape[1], "< & >");
+        $this -> assertEquals($escape[1], "asd > asd asd &");
         $this -> assertEquals($escape[2], "©");
         $attr = $dom -> find("//div[class(attr)]/@attr", 0);
         $this -> assertEquals($attr, "\"'< & >");
     }
-    public function testNext() {
+    public function testNextAxis() {
         $dom = new DOM($this -> getHTML());
         $_ = $dom -> find('//div[class(anchor)]/following::div[class(next)]/text()', 0);
         $this -> assertEquals('text next to anchor', $_);
+    }
+    public function testParentAxis() {
+        $dom = new DOM($this -> getHTML());
+        $parent = $dom -> find('//div[@id="child"]/parent::*/@attr', 0);
+        $this -> assertEquals('parent', $parent);
+    }
+    public function testSelfAxis() {
+        $dom = new DOM($this -> getHTML());
+        $id = $dom -> find('//div[class(self-axis)]//a/self::*[span[class(select-me)]]/@id', 0);
+        $this -> assertEquals('a3', $id);
+    }
+    public function testPosition() {
+        $dom = new DOM($this -> getHTML());
+        $class = $dom -> find('//div[class(get-last)]/a[position()=last()]/@class', 0);
+        $this -> assertEquals('last', $class);
     }
 }
