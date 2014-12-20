@@ -47,7 +47,7 @@ echo $dom -> find('//title/text()', 0), chr(10);
 Yahoo
 ```
 
-Notice that whatever you select by XPath library returns string or array of strings. No objects!
+Whatever you select by XPath, library returns string or array of strings. No objects!
 
 ### CI: Codeship
 
