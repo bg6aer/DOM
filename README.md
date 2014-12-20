@@ -51,7 +51,7 @@ Notice that whatever you select by XPath library returns string or array of stri
 
 ### CI: Codeship
 
-[![Codeship Status for Ejz/DOM](https://codeship.com/projects/cf767e50-4a4e-0132-ff36-2ed7adbe9f3c/status)](https://codeship.com/projects/46255)
+[![Codeship Status for Ejz/DOM](https://codeship.com/projects/bcd7db20-6abb-0132-5494-2e0b75730361/status)](https://codeship.com/projects/53779)
 
 ### CI: Travis
 
