@@ -43,6 +43,6 @@ echo $dom -> find('//title/text()', 0), chr(10);
 ```
 
 ```
-<title>Yahoo!</title>
+<title>Yahoo!  </title>
 Yahoo!
 ```
