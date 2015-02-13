@@ -80,4 +80,23 @@ HTML;
         $class = $dom -> find('//div[class(get-last)]/a[position()=last()]/@class', 0);
         $this -> assertEquals('last', $class);
     }
+    public function testBugWithZero() {
+        $HTML = <<<HTML
+<div class="discuss-table-cell discuss-counter">
+
+0
+
+</div>
+<div class="discuss-table-cell discuss-time-cell">
+
+<time class="discuss-time ellispis">
+06:55
+</time>
+
+</div>
+HTML;
+        $dom = new DOM($HTML);
+        $zero = $dom -> find('//div[class(discuss-counter)]/text()', 0);
+        $this -> assertTrue($zero === '0');
+    }
 }
