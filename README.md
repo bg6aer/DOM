@@ -49,6 +49,35 @@ Yahoo
 
 Whatever you select by XPath, library returns string or array of strings. No objects!
 
+### CLI
+
+Library is easily adopted for command-line interface (CLI) usage. From the very beggining:
+
+```bash
+$ T=$(mktemp -d) && cd $T
+$ curl -sS 'https://getcomposer.org/installer' | php
+$ php composer.phar require ejz/dom:~1.0
+$ php composer.phar install
+$ cd vendor/ejz/dom/
+$ curl -sS 'https://getcomposer.org/installer' | php
+$ php composer.phar install
+$ chmod a+x install.sh
+$ sudo ./install.sh
+```
+
+After installation you can execute:
+
+```bash
+$ echo "<a href=''>Link</a>" | cli-dom '//a/text()'
+Link
+$ echo "<a class='findme' href=''>Find me</a>" | cli-dom '//a[class(findme)]/text()'
+Find me
+$ echo "string" | cli-dom '//*'
+<html><body><p>string</p></body></html>
+<body><p>string</p></body>
+<p>string</p>
+```
+
 ### CI: Codeship
 
 [![Codeship Status for Ejz/DOM](https://codeship.com/projects/bcd7db20-6abb-0132-5494-2e0b75730361/status)](https://codeship.com/projects/53779)
