@@ -12,7 +12,12 @@ if(!$xpath) {
     exit(1);
 }
 
-$content = file_get_contents('php://stdin');
-$dom = new DOM($content);
+$handle = STDIN;
+$buffer = array();
+if($handle and ftell($handle) === 0)
+    while(!feof($handle))
+        $buffer[] = fread($handle, 1024);
+$buffer = implode('', $buffer);
+$dom = new DOM($buffer);
 @ $__ = $dom -> find($xpath);
 if($__) foreach($__ as $_) echo $_, chr(10);
