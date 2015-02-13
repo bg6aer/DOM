@@ -57,7 +57,6 @@ Library is easily adopted for command-line interface (CLI) usage. From the very 
 $ T=$(mktemp -d) && cd $T
 $ curl -sS 'https://getcomposer.org/installer' | php
 $ php composer.phar require ejz/dom:~1.0
-$ php composer.phar install
 $ cd vendor/ejz/dom/
 $ curl -sS 'https://getcomposer.org/installer' | php
 $ php composer.phar install
