@@ -18,6 +18,9 @@ if($handle and ftell($handle) === 0)
     while(!feof($handle))
         $buffer[] = fread($handle, 1024);
 $buffer = implode('', $buffer);
+
+if(!$buffer) exit(1);
+
 $dom = new DOM($buffer);
 @ $__ = $dom -> find($xpath);
 if($__) foreach($__ as $_) echo $_, chr(10);
