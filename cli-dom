@@ -1,0 +1,17 @@
+<?php
+
+define('ROOT', __DIR__);
+require(ROOT . '/vendor/autoload.php');
+
+use Ejz\DOM;
+
+@ $xpath = $_SERVER['argv'][1];
+if(!$xpath) {
+    echo "Invalid argument \$xpath", chr(10);
+    exit(1);
+}
+
+$content = file_get_contents('php://stdin');
+$dom = new DOM($content);
+@ $__ = $dom -> find($xpath);
+if($__) foreach($__ as $_) echo $_, chr(10);
