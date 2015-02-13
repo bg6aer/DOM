@@ -62,6 +62,8 @@ $ curl -sS 'https://getcomposer.org/installer' | php
 $ php composer.phar install
 $ chmod a+x install.sh
 $ sudo ./install.sh
+Install /tmp/tmp.v6u0tF6byd/vendor/ejz/dom to /usr/local/cli-dom ... [OK]
+Finalize ... [OK]
 $ cd ~ && rm -rf $T
 ```
 
