@@ -62,6 +62,7 @@ $ curl -sS 'https://getcomposer.org/installer' | php
 $ php composer.phar install
 $ chmod a+x install.sh
 $ sudo ./install.sh
+$ cd ~ && rm -rf $T
 ```
 
 After installation you can execute:
