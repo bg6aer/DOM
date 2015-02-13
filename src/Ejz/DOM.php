@@ -82,9 +82,10 @@ class DOM {
             foreach($node -> attributes as $a)
                 $attr[] = ' ' . sprintf('%s="%s"', $a -> nodeName, fesc($a -> nodeValue));
         if($node -> hasChildNodes())
-            foreach($node -> childNodes as $childNode)
-                if($t = $this -> toArray($childNode, $level + 1))
-                    $inner[] = $t;
+            foreach($node -> childNodes as $childNode) {
+                $t = $this -> toArray($childNode, $level + 1);
+                if($t or $t == 0) $inner[] = $t;
+            }
         $attr = implode('', $attr);
         $inner = implode('', $inner);
         if(!$inner and in_array($tag, explode(',', 'br,img,hr,param')))
