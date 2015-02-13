@@ -41,18 +41,17 @@ array_walk($args, function(& $xpath) use($dom, & $max) {
     if(strpos($xpath, '--') === 0) return;
     $elem = array();
     @ $__ = $dom -> find($xpath);
-    if($__) $elem = $__; // foreach($__ as $_) echo $_, chr(10);
+    if($__) $elem = $__;
     $xpath = $elem;
     if(count($xpath) > $max) $max = count($xpath);
 });
 
 for($i = 0; $i < $max; $i++) {
     foreach($args as $arg) {
-        if(!is_array($arg)) { echo $arg; continue; }
-        if(isset($arg[$i])) { echo $arg[$i]; continue; }
+        if(!is_array($arg)) echo $arg;
+        elseif(isset($arg[$i])) echo $arg[$i];
     }
+    echo chr(10);
 }
-
-// if($__) foreach($__ as $_) echo $_, chr(10);
 
 endforeach;
