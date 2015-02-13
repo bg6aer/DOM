@@ -6,8 +6,17 @@ require(ROOT . '/vendor/autoload.php');
 
 use Ejz\DOM;
 
-@ $xpath = $_SERVER['argv'][1];
-if(!$xpath) {
+@ $args = $_SERVER['argv'] ? $_SERVER['argv'] : array();
+array_shift($args);
+if(!$args) {
+    echo "Invalid argument \$xpath", chr(10);
+    exit(1);
+}
+if(isset($args[0]) and $args[0] === '-m') {
+    array_shift($args);
+    $multiline = true;
+} else $multiline = false;
+if(!$args) {
     echo "Invalid argument \$xpath", chr(10);
     exit(1);
 }
@@ -16,11 +25,34 @@ $handle = STDIN;
 $buffer = array();
 if($handle and ftell($handle) === 0)
     while(!feof($handle))
-        $buffer[] = fread($handle, 1024);
+        $buffer[] = fread($handle, 1024 * 1024);
 $buffer = implode('', $buffer);
 
 if(!$buffer) exit(1);
 
-$dom = new DOM($buffer);
-@ $__ = $dom -> find($xpath);
-if($__) foreach($__ as $_) echo $_, chr(10);
+if($multiline) $buffer = nsplit($buffer);
+else $buffer = array($buffer);
+
+foreach($buffer as $content):
+
+$dom = new DOM($content);
+$max = 0;
+array_walk($args, function(& $xpath) use($dom, & $max) {
+    if(strpos($xpath, '--') === 0) return;
+    $elem = array();
+    @ $__ = $dom -> find($xpath);
+    if($__) $elem = $__; // foreach($__ as $_) echo $_, chr(10);
+    $xpath = $elem;
+    if(count($xpath) > $max) $max = count($xpath);
+});
+
+for($i = 0; $i < $max; $i++) {
+    foreach($args as $arg) {
+        if(!is_array($arg)) { echo $arg; continue; }
+        if(isset($arg[$i])) { echo $arg[$i]; continue; }
+    }
+}
+
+// if($__) foreach($__ as $_) echo $_, chr(10);
+
+endforeach;
