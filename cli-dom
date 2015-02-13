@@ -32,13 +32,18 @@ if(!$buffer) exit(1);
 
 if($multiline) $buffer = nsplit($buffer);
 else $buffer = array($buffer);
+$_args = $args;
 
 foreach($buffer as $content):
 
 $dom = new DOM($content);
 $max = 0;
+$args = $_args;
 array_walk($args, function(& $xpath) use($dom, & $max) {
-    if(strpos($xpath, '--') === 0) return;
+    if(strpos($xpath, $_ = '--delimiter=') === 0) {
+        $xpath = substr($xpath, strlen($_));
+        return;
+    }
     $elem = array();
     @ $__ = $dom -> find($xpath);
     if($__) $elem = $__;
@@ -47,9 +52,16 @@ array_walk($args, function(& $xpath) use($dom, & $max) {
 });
 
 for($i = 0; $i < $max; $i++) {
+    $space = false;
     foreach($args as $arg) {
         if(!is_array($arg)) echo $arg;
-        elseif(isset($arg[$i])) echo $arg[$i];
+        elseif(isset($arg[$i])) {
+            if($space) echo " ";
+            echo $arg[$i];
+            $space = true;
+            continue;
+        }
+        $space = false;
     }
     echo chr(10);
 }
