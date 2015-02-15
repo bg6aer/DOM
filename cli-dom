@@ -32,6 +32,19 @@ if(!$buffer) exit(1);
 
 if($multiline) $buffer = nsplit($buffer);
 else $buffer = array($buffer);
+
+// -d parameter
+$_ = array();
+$d = false;
+foreach($args as $arg)
+    if($arg === '-d') {
+        $d = true;
+    } elseif($d) {
+        $_[] = "--delimiter={$arg}";
+        $d = false;
+    } else $_[] = $arg;
+
+$args = $_;
 $_args = $args;
 
 foreach($buffer as $content):
