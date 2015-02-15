@@ -54,17 +54,7 @@ Whatever you select by XPath, library returns string or array of strings. No obj
 Library is easily adopted for command-line interface (CLI) usage. From the very beggining:
 
 ```bash
-$ T=$(mktemp -d) && cd $T
-$ curl -sS 'https://getcomposer.org/installer' | php
-$ php composer.phar require ejz/dom:~1.0
-$ cd vendor/ejz/dom/
-$ curl -sS 'https://getcomposer.org/installer' | php
-$ php composer.phar install
-$ chmod a+x install.sh
-$ sudo ./install.sh
-Install /tmp/tmp.v6u0tF6byd/vendor/ejz/dom to /usr/local/cli-dom ... [OK]
-Finalize ... [OK]
-$ cd ~ && rm -rf $T
+$ curl -sSL 'https://raw.githubusercontent.com/Ejz/DOM/master/full.install.sh' | sudo bash
 ```
 
 After installation you can execute:
