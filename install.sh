@@ -12,6 +12,8 @@ SOURCE=`pwd`
 DESTINATION="$PREFIX/cli-dom"
 
 echo "Install $SOURCE to $DESTINATION ... [OK]"
+rm -rf "$DESTINATION"
+rm -f "$BIN/cli-dom"
 
 if [ -d "$DESTINATION" ]; then
     echo "Destination ($DESTINATION) already exists!"
