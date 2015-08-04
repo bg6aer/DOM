@@ -86,4 +86,10 @@ HTML;
         $div = $dom -> find('//div', 0);
         $this -> assertTrue($div === "<div>0</div>");
     }
+    public function testBugWithCDATA() {
+        $HTML = "<link><![CDATA[http://site.com/]]></link>";
+        $dom = new DOM($HTML);
+        $link = $dom -> find('//link/text()', 0);
+        $this -> assertTrue($link === "http://site.com/");
+    }
 }
