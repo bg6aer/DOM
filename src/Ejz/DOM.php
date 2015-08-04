@@ -71,6 +71,11 @@ class DOM {
                 return esc(trim($node -> nodeValue));
             else return trim($node -> nodeValue);
         }
+        if($node -> nodeType == XML_CDATA_SECTION_NODE) {
+            if($level)
+                return esc(trim($node -> textContent));
+            else return trim($node -> textContent);
+        }
         if($node -> nodeType == XML_COMMENT_NODE) return '<!--' . $node -> nodeValue . '-->';
         @ $tag = $node -> tagName;
         if(!$tag) return '';
