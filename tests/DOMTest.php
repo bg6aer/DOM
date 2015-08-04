@@ -92,4 +92,15 @@ HTML;
         $link = $dom -> find('//link/text()', 0);
         $this -> assertTrue($link === "http://site.com/");
     }
+    public function testAttr() {
+        $HTML = "<link attr='<&>'>MyLink</link>";
+        $dom = new DOM($HTML);
+        $attr = $dom -> attr('attr');
+        $this -> assertTrue($attr === "<&>");
+        //
+        $HTML = "<link attr='&lt;&amp;&gt;'>MyLink</link>";
+        $dom = new DOM($HTML);
+        $attr = $dom -> attr('attr');
+        $this -> assertTrue($attr === "<&>");
+    }
 }
