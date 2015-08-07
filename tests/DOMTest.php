@@ -87,10 +87,15 @@ HTML;
         $this -> assertTrue($div === "<div>0</div>");
     }
     public function testBugWithCDATA() {
-        $HTML = "<link><![CDATA[http://site.com/]]></link>";
+        register_shutdown_function(function() {
+            var_dump(func_get_args());
+        });
+        // error_reporting(-1);
+        // ini_set();
+        $HTML = "<block><div><![CDATA[<a href=''>]]></div> <div>11</div></block>";
         $dom = new DOM($HTML);
-        $link = $dom -> find('//link/text()', 0);
-        $this -> assertTrue($link === "http://site.com/");
+        $div = $dom -> find('//div/text()', 0);
+        $this -> assertTrue($div === "<a href=''>");
     }
     public function testAttr() {
         $HTML = "<link attr='<&>'>MyLink</link>";

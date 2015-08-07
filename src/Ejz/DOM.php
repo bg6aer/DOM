@@ -10,13 +10,18 @@ class DOM {
         self::init($html, $this);
     }
     public static function init($html, $pointer = null) {
-        if(!$html or !is_string($html)) $html = "<html></html>";
         if(is_null($pointer)) $pointer = new self();
+        if(!is_string($html)) $html = "<html></html>";
+        $html = trim($html);
+        if(!$html) $html = "<html></html>";
+        $prefix = '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
+        if(strpos($html, '<' . '?xml') === 0) ;
+        else $html = $prefix . chr(10) . $html . chr(10);
         $pointer -> html = $html;
-        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $dom = new \DOMDocument();
         $dom -> preserveWhiteSpace = false;
         libxml_use_internal_errors(true);
-        $dom -> loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        $dom -> loadXML($pointer -> html);
         libxml_clear_errors();
         $pointer -> _dom = $dom;
         $pointer -> _xpath = new \DOMXpath($pointer -> _dom);
@@ -27,7 +32,7 @@ class DOM {
     public function count($xpath) { return count($this -> find($xpath)); }
     public function find($xpath, $index = null, $delete = false) {
         if(strpos($xpath, '/') !== 0) {
-            trigger_error("XPATH IS WRONG ({$xpath})", E_USER_WARNING);
+            _warn(__FUNCTION__, "XPATH ({$xpath}) IS WRONG!");
             if(is_null($index)) return array();
             return null;
         }
