@@ -81,7 +81,11 @@ class DOM {
             if($level) return $formatF . esc($_);
             else return $_;
         }
-        if($node -> nodeType == XML_COMMENT_NODE) return '<!--' . $node -> nodeValue . '-->';
+        if($node -> nodeType == XML_COMMENT_NODE) {
+            $_ = trim($node -> nodeValue);
+            if(!$_ and !is_numeric($_)) return '';
+            return $formatF . '<!-- ' . $_ . ' -->';
+        }
         @ $tag = $node -> tagName;
         if(!$tag) return '';
         $collector = "{$formatF}<{$tag}%s>%s{$formatL}</{$tag}>";

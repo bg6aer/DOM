@@ -35,7 +35,9 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 <div class="get-last">
     <a></a>
     <a></a>
-    <a></a>
+    <a></a><!--       i'm comment        -->
+    <!--       -->
+    text
     <a class="last"></a>
 </div>
 <div class="contains-count">
@@ -127,5 +129,10 @@ HTML;
         $_ = $dom -> find('//div', 0);
         $this -> assertTrue(strpos($_, '    <span>') !== false);
         $this -> assertTrue(strpos($_, '<div') !== false);
+    }
+    public function testBugWithFormatComment() {
+        $dom = new DOM($this -> getHTML(), true);
+        $_ = $dom -> find('//div[class(get-last)]', 0);
+        echo $_;
     }
 }
