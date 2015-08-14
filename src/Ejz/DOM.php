@@ -68,6 +68,7 @@ class DOM {
     private function toArray($node, $level) {
         $formatF = ($this -> _format and $level) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $formatL = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
+        $formatP = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * ($level + 1))) : '';
         $array = array();
         if(!$node) return array();
         if($node instanceof \DOMAttr) return $node -> value;
@@ -78,13 +79,20 @@ class DOM {
         if($node -> nodeType == XML_TEXT_NODE) {
             $_ = trim($node -> nodeValue);
             if(!$_ and !is_numeric($_)) return '';
+            $_ = preg_replace('~\s+~', ' ', $_);
             if($level) return $formatF . esc($_);
             else return $_;
         }
         if($node -> nodeType == XML_COMMENT_NODE) {
             $_ = trim($node -> nodeValue);
             if(!$_ and !is_numeric($_)) return '';
-            return $formatF . '<!-- ' . $_ . ' -->';
+            $_ = nsplit($_); // comment can be multiline
+            if(count($_) === 1) return $formatF . '<!-- ' . $_[0] . ' -->';
+            $echo = array();
+            $echo[] = $formatF . '<!--';
+            foreach($_ as $line) $echo[] = $formatP . $line;
+            $echo[] = $formatF . '-->';
+            return implode('', $echo);
         }
         @ $tag = $node -> tagName;
         if(!$tag) return '';

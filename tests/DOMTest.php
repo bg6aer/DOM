@@ -37,9 +37,15 @@ class DOMTest extends PHPUnit_Framework_TestCase {
     <a></a>
     <a></a><!--       i'm comment        -->
     <!--       -->
-    text
+    text1
+    text2
+
+    3
     <a class="last"></a>
 </div>
+<div class="multiline-comment"><!-- one
+- two
+-- three --></div>
 <div class="contains-count">
     <img src="/img/myimage.gif" />
 </div>
@@ -133,6 +139,30 @@ HTML;
     public function testBugWithFormatComment() {
         $dom = new DOM($this -> getHTML(), true);
         $_ = $dom -> find('//div[class(get-last)]', 0);
-        echo $_;
+        $CMP = <<<CMP
+<div class="get-last">
+    <a></a>
+    <a></a>
+    <a></a>
+    <!-- i'm comment -->
+    text1 text2 3
+    <a class="last"></a>
+</div>
+CMP;
+        $this -> assertEquals($CMP, $_);
+    }
+    public function testBugWithMultilineComment() {
+        $dom = new DOM($this -> getHTML(), true);
+        $_ = $dom -> find('//div[class(multiline-comment)]', 0);
+        $CMP = <<<CMP
+<div class="multiline-comment">
+    <!--
+        one
+        - two
+        -- three
+    -->
+</div>
+CMP;
+        $this -> assertEquals($CMP, $_);
     }
 }
