@@ -7,23 +7,7 @@ DOM is native HTML parsing library for PHP. Supports XPath syntax.
 ```bash
 $ mkdir myproject && cd myproject
 $ curl -sS 'https://getcomposer.org/installer' | php
-$ nano -w composer.json
-```
-
-Insert following code:
-
-```javascript
-{
-    "require": {
-        "ejz/dom": "~1.0"
-    }
-}
-```
-
-Now install dependencies:
-
-```bash
-$ php composer.phar install
+$ php composer.phar require ejz/dom:~1.0
 ```
 
 Let's begin:
@@ -51,10 +35,10 @@ Whatever you select by XPath, library returns string or array of strings. No obj
 
 ### CLI
 
-Library is easily adopted for command-line interface (CLI) usage. From the very beggining:
+Library is adopted for command-line interface (CLI) usage.
 
 ```bash
-$ curl -sSL 'https://raw.githubusercontent.com/Ejz/DOM/master/full.install.sh' | sudo bash
+$ curl -sSL 'https://raw.githubusercontent.com/Ejz/DOM/master/i.sh' | sudo bash
 ```
 
 After installation you can execute:
@@ -64,10 +48,20 @@ $ echo "<a href=''>Link</a>" | cli-dom '//a/text()'
 Link
 $ echo "<a class='findme' href=''>Find me</a>" | cli-dom '//a[class(findme)]/text()'
 Find me
-$ echo "string" | cli-dom '//*'
-<html><body><p>string</p></body></html>
-<body><p>string</p></body>
-<p>string</p>
+```
+
+You can use library to prettify some HTML output:
+
+```bash
+$ wget -q -O - 'https://php.net/' | cli-dom -f '//head'
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+        PHP: Hypertext Preprocessor
+    </title>
+    <link rel="shortcut icon" href="https://php.net/favicon.ico"></link>
+</head>
 ```
 
 ### CI: Codeship
