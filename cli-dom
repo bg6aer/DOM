@@ -12,10 +12,17 @@ if(!$args) {
     echo "Invalid argument \$xpath", chr(10);
     exit(1);
 }
+
 if(isset($args[0]) and $args[0] === '-m') {
     array_shift($args);
     $multiline = true;
 } else $multiline = false;
+
+if(isset($args[0]) and $args[0] === '-f') {
+    array_shift($args);
+    $format = true;
+} else $format = false;
+
 if(!$args) {
     echo "Invalid argument \$xpath", chr(10);
     exit(1);
@@ -49,7 +56,7 @@ $_args = $args;
 
 foreach($buffer as $content):
 
-$dom = new DOM($content);
+$dom = new DOM($content, $format);
 $max = 0;
 $args = $_args;
 array_walk($args, function(& $xpath) use($dom, & $max) {

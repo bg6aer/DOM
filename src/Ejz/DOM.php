@@ -6,10 +6,11 @@ class DOM {
     public $html = null;
     private $_dom = null;
     private $_xpath = null;
-    public function __construct($html = '') {
-        self::init($html, $this);
+    private $_format = false;
+    public function __construct($html = '', $format = false) {
+        self::init($html, $format, $this);
     }
-    public static function init($html, $pointer = null) {
+    public static function init($html, $format = false, $pointer = null) {
         if(is_null($pointer)) $pointer = new self();
         if(!is_string($html)) $html = "<html></html>";
         $html = trim($html);
@@ -21,9 +22,10 @@ class DOM {
         $dom = new \DOMDocument();
         $dom -> preserveWhiteSpace = false;
         libxml_use_internal_errors(true);
-        $dom -> loadXML($pointer -> html);
+        $dom -> loadHTML($pointer -> html);
         libxml_clear_errors();
         $pointer -> _dom = $dom;
+        $pointer -> _format = $format;
         $pointer -> _xpath = new \DOMXpath($pointer -> _dom);
         return $pointer;
     }
@@ -64,6 +66,8 @@ class DOM {
         return call_user_func_array(array($this, 'find'), array($xpath, $index, $delete));
     }
     private function toArray($node, $level) {
+        $formatF = ($this -> _format and $level) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
+        $formatL = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $array = array();
         if(!$node) return array();
         if($node instanceof \DOMAttr) return $node -> value;
@@ -72,20 +76,17 @@ class DOM {
             return $array;
         }
         if($node -> nodeType == XML_TEXT_NODE) {
-            if($level)
-                return esc(trim($node -> nodeValue));
-            else return trim($node -> nodeValue);
-        }
-        if($node -> nodeType == XML_CDATA_SECTION_NODE) {
-            if($level)
-                return esc(trim($node -> textContent));
-            else return trim($node -> textContent);
+            $_ = trim($node -> nodeValue);
+            if(!$_ and !is_numeric($_)) return '';
+            if($level) return $formatF . esc($_);
+            else return $_;
         }
         if($node -> nodeType == XML_COMMENT_NODE) return '<!--' . $node -> nodeValue . '-->';
         @ $tag = $node -> tagName;
         if(!$tag) return '';
-        $collector = "<{$tag}%s>%s</{$tag}>";
-        $closed = "<{$tag}%s />";
+        $collector = "{$formatF}<{$tag}%s>%s{$formatL}</{$tag}>";
+        $collectorE = "{$formatF}<{$tag}%s></{$tag}>";
+        $closed = "{$formatF}<{$tag}%s />";
         $attr = array();
         $inner = array();
         if($node -> hasAttributes())
@@ -94,12 +95,14 @@ class DOM {
         if($node -> hasChildNodes())
             foreach($node -> childNodes as $childNode) {
                 $t = $this -> toArray($childNode, $level + 1);
-                if($t or $t == 0) $inner[] = $t;
+                if($t or $t === '0') $inner[] = $t;
             }
         $attr = implode('', $attr);
         $inner = implode('', $inner);
-        if(!$inner and in_array($tag, explode(',', 'br,img,hr,param')))
+        $is_numeric = is_numeric($inner);
+        if(!$inner and !$is_numeric and in_array($tag, explode(',', 'br,img,hr,param,meta')))
             return sprintf($closed, $attr);
+        if(!$inner and !$is_numeric) return sprintf($collectorE, $attr);
         return sprintf($collector, $attr, $inner);
     }
 }

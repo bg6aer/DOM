@@ -10,7 +10,9 @@ class DOMTest extends PHPUnit_Framework_TestCase {
     public function getHTML() {
         $HTML = <<<HTML
 <html>
-<meta equiv="Content-Type" content="text/html; charset=utf-8">
+<head>
+<meta equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
 <a href="findme.html"> Регистрация </a>
 <div class="class1 escape class2">
     <span> &lt;&amp;&gt; </span>
@@ -46,6 +48,12 @@ HTML;
     public function testHTMLCount() {
         $dom = new DOM($this -> getHTML());
         $this -> assertEquals($dom -> count('/html'), 1);
+    }
+    public function testRoot() {
+        $dom = new DOM($this -> getHTML());
+        $this -> assertTrue(count($dom -> find('/*')) === 1);
+        foreach($dom -> find('/*') as $root)
+            $this -> assertTrue(strpos($root, '<html>') === 0);
     }
     public function testEncoding() {
         $dom = new DOM($this -> getHTML());
@@ -85,17 +93,23 @@ HTML;
         $dom = new DOM($HTML);
         $div = $dom -> find('//div', 0);
         $this -> assertTrue($div === "<div>0</div>");
-    }
-    public function testBugWithCDATA() {
-        register_shutdown_function(function() {
-            var_dump(func_get_args());
-        });
-        // error_reporting(-1);
-        // ini_set();
-        $HTML = "<block><div><![CDATA[<a href=''>]]></div> <div>11</div></block>";
+        //
+        $HTML = "<div> 000 </div>";
         $dom = new DOM($HTML);
-        $div = $dom -> find('//div/text()', 0);
-        $this -> assertTrue($div === "<a href=''>");
+        $div = $dom -> find('//div', 0);
+        $this -> assertTrue($div === "<div>000</div>");
+        //
+        $HTML = "<div> 0.0 </div>";
+        $dom = new DOM($HTML);
+        $div = $dom -> find('//div', 0);
+        $this -> assertTrue($div === "<div>0.0</div>");
+    }
+    public function testBugWithZeroFormat() {
+        $HTML = "<div> 0 </div>";
+        $dom = new DOM($HTML, true);
+        $div = $dom -> find('//div', 0);
+        $nl = chr(10);
+        $this -> assertTrue($div === "<div>{$nl}    0{$nl}</div>");
     }
     public function testAttr() {
         $HTML = "<link attr='<&>'>MyLink</link>";
@@ -107,5 +121,11 @@ HTML;
         $dom = new DOM($HTML);
         $attr = $dom -> attr('attr');
         $this -> assertTrue($attr === "<&>");
+    }
+    public function testFormat() {
+        $dom = new DOM($this -> getHTML(), true);
+        $_ = $dom -> find('//div', 0);
+        $this -> assertTrue(strpos($_, '    <span>') !== false);
+        $this -> assertTrue(strpos($_, '<div') !== false);
     }
 }
