@@ -49,6 +49,10 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 <div class="contains-count">
     <img src="/img/myimage.gif" />
 </div>
+<div class="test-delete">
+    <span class="cl-one">1</span>
+    <span class="cl-two">2</span>
+</div>
 </html>
 HTML;
         return $HTML;
@@ -95,6 +99,16 @@ HTML;
         $dom = new DOM($this -> getHTML());
         $class = $dom -> find('//div[class(get-last)]/a[position()=last()]/@class', 0);
         $this -> assertEquals('last', $class);
+    }
+    public function testDelete() {
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/*[class(cl-one)]');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        
     }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";
