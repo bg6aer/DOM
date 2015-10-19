@@ -108,7 +108,17 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', 0);
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/span/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', 1);
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/span/text()', 0);
+        $this -> assertEquals('1', $_);
     }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";
