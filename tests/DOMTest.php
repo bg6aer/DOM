@@ -100,6 +100,31 @@ HTML;
         $class = $dom -> find('//div[class(get-last)]/a[position()=last()]/@class', 0);
         $this -> assertEquals('last', $class);
     }
+    public function testGetList() {
+        $dom = new DOM($this -> getHTML());
+        $_ = $dom -> getList('/*', null);
+        $count = 0;
+        foreach($_ as $__) $count += 1;
+        $this -> assertTrue($count === 1);
+        //
+        $dom = new DOM($this -> getHTML());
+        $_ = $dom -> getList('//*', null);
+        $count = 0;
+        foreach($_ as $__) $count += 1;
+        $this -> assertTrue($count > 1);
+        //
+        $dom = new DOM($this -> getHTML());
+        $_ = $dom -> getList('/*', 0);
+        $count = 0;
+        foreach($_ as $__) $count += 1;
+        $this -> assertTrue($count === 1);
+        //
+        $dom = new DOM($this -> getHTML());
+        $_ = $dom -> getList('/*', 100);
+        $count = 0;
+        foreach($_ as $__) $count += 1;
+        $this -> assertTrue($count === 0);
+    }
     public function testDelete() {
         //
         $dom = new DOM($this -> getHTML());
@@ -119,6 +144,65 @@ HTML;
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/span/text()', 0);
         $this -> assertEquals('1', $_);
+    }
+    public function testDeleteCallback() {
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', 0, function($string) {
+            return $string;
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+            return $string;
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', 1, function($string) {
+            return '';
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertNotEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+            $dom = DOM::init($string);
+            $count = $dom -> count('//*[@class="cl-one"]');
+            if($count) return $string;
+            return '';
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertNotEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+            $dom = DOM::init($string);
+            $text = $dom -> find('//text()', 0);
+            return $text;
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertNotEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertNotEquals('2', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('12', $_);
     }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";

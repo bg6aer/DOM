@@ -32,11 +32,11 @@ class DOM {
     public function attr($attr) { return $this -> find("//@{$attr}", 0); }
     public function text() { return $this -> find("//text()", 0); }
     public function count($xpath) { return count($this -> find($xpath)); }
-    public function find($xpath, $index = null, $delete = false) {
+    public function getList($xpath, $index) {
+        if(!$this -> _xpath) return array();
         if(strpos($xpath, '/') !== 0) {
             _warn(__FUNCTION__, "XPATH ({$xpath}) IS WRONG!");
-            if(is_null($index)) return array();
-            return null;
+            return array();
         }
         $xpath = preg_replace(
             '~class\((?P<class>.*?)\)~i',
@@ -48,22 +48,48 @@ class DOM {
             'translate($1,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")',
             $xpath
         );
-        if(!$this -> _xpath) return array();
-        $list = $this -> _xpath -> query($xpath);
-        if($list === false) {
-            $array = array();
-        } elseif($delete) {
-            foreach($list as $elem) $elem -> parentNode -> removeChild($elem);
+        if(is_numeric($index)) $xpath .= '[' . (intval($index) + 1) . ']';
+        return $this -> _xpath -> query($xpath);
+    }
+    public function find($xpath, $index = null, $delete = false) {
+        $list = $this -> getList($xpath, $index);
+        if(!$list) $list = array();
+        if(is_callable($delete)) {
+            $array = $this -> toArray($list, 0);
+            $count = 0; foreach($list as $_) $count += 1;
+            if($array and count($array) != $count)
+                _warn(__FUNCTION__, 'INVALID COUNT!');
+            $i = 0;
+            foreach($list as $elem) {
+                $_ = $delete($array[$i]);
+                if(preg_match('~^<\w+[^>]*>~', $_)) {
+                    $_ = self::init($_);
+                    $_ = $_ -> getList('//body/*', 0);
+                } elseif($_) $_ = array($this -> _dom -> createTextNode($_));
+                else $_ = array();
+                foreach($_ as $__) { $first = $__; break; }
+                if(isset($first)) {
+                    $first = $this -> _dom -> importNode($first, true);
+                    $elem -> parentNode -> replaceChild($first, $elem);
+                } else $elem -> parentNode -> removeChild($elem);
+                $i += 1;
+            }
             return call_user_func_array(array($this, 'find'), array('/*', 0));
-        } else $array = $this -> toArray($list, 0);
-        if(is_null($index)) return $array;
-        return @ $array[$index];
+        } elseif($delete) {
+            foreach($list as $elem)
+                $elem -> parentNode -> removeChild($elem);
+            return call_user_func_array(array($this, 'find'), array('/*', 0));
+        } else {
+            $array = $this -> toArray($list, 0);
+            if(is_null($index)) return $array;
+            return @ $array[$index];
+        }
     }
-    public function delete($xpath) {
-        return call_user_func_array(array($this, 'find'), array($xpath, null, true));
+    public function delete($xpath, $index = null, $callback = null) {
+        return call_user_func_array(array($this, 'find'), array($xpath, $index, is_callable($callback) ? $callback : true));
     }
-    public function __invoke($xpath, $index = null, $delete = false) {
-        return call_user_func_array(array($this, 'find'), array($xpath, $index, $delete));
+    public function __invoke() {
+        return call_user_func_array(array($this, 'find'), func_get_args());
     }
     private function toArray($node, $level) {
         $formatF = ($this -> _format and $level) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
