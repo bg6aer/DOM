@@ -7,5 +7,5 @@ cd vendor/ejz/dom/
 curl -sS 'https://getcomposer.org/installer' | php
 php composer.phar install
 chmod a+x install.sh
-./install.sh
+./install.sh "$1"
 cd - && rm -rf $TTT

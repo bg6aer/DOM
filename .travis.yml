@@ -12,5 +12,9 @@ php:
 before_script:
   - curl -s http://getcomposer.org/installer | php
   - php composer.phar install
+  - wget -O i.sh 'https://raw.githubusercontent.com/Ejz/DOM/master/i.sh'
+  - chmod a+x i.sh
+  - mkdir bin
+  - ./i.sh `pwd`/bin
 
 script: phpunit
