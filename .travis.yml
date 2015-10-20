@@ -12,9 +12,10 @@ php:
 before_script:
   - curl -s http://getcomposer.org/installer | php
   - php composer.phar install
-  - wget -O i.sh 'https://raw.githubusercontent.com/Ejz/DOM/master/i.sh'
-  - chmod a+x i.sh
-  - mkdir bin
-  - ./i.sh `pwd`/bin
+  - mkdir -p testinstall/bin
+  - ./i.sh `pwd`/testinstall
 
-script: phpunit
+script:
+  - test -x testinstall/bin/cli-dom
+  - test $(testinstall/bin/cli-dom '//title' 'http://github.com/' | grep -c .) -gt 0
+  - phpunit
