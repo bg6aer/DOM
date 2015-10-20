@@ -88,6 +88,9 @@ class DOM {
     public function delete($xpath, $index = null, $callback = null) {
         return call_user_func_array(array($this, 'find'), array($xpath, $index, is_callable($callback) ? $callback : true));
     }
+    public function replace() {
+        return call_user_func_array(array($this, 'delete'), func_get_args());
+    }
     public function __invoke() {
         return call_user_func_array(array($this, 'find'), func_get_args());
     }

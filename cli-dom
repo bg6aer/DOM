@@ -6,84 +6,70 @@ require(ROOT . '/vendor/autoload.php');
 
 use Ejz\DOM;
 
-@ $args = $_SERVER['argv'] ? $_SERVER['argv'] : array();
-array_shift($args);
-if(!$args) {
-    echo "Invalid argument \$xpath", chr(10);
+$opts = getopts(array(
+    'm' => false, 'multiline' => false,
+    'f' => false, 'format' => false,
+    'd' => true, 'delimiter' => true,
+    'r' => true, 'replace' => true,
+    'limit' => true
+));
+
+if($opts === array()) goto help;
+
+@ $MULTILINE = ($opts['m'] or @ $opts['multiline']);
+@ $FORMAT = ($opts['f'] or @ $opts['format']);
+@ ($DELIMITER = $opts['d']) or @ ($DELIMITER = $opts['delimiter']);
+$DELIMITER = $DELIMITER ? $DELIMITER : ',';
+@ ($REPLACE = $opts['r']) or @ ($REPLACE = $opts['replace']);
+@ $LIMIT = is_numeric($opts['limit']) ? intval($opts['limit']) : null;
+$URL = $opts[max(array_keys($opts))];
+$XPATH = array();
+for($i = 1; $i < max(array_keys($opts)); $i++)
+    $XPATH[] = $opts[$i];
+
+if(!$XPATH) goto help;
+
+if($REPLACE and count($XPATH) > 1) {
+    echo "If you use replace, you should use just one search XPATH\n";
     exit(1);
 }
 
-if(isset($args[0]) and $args[0] === '-m') {
-    array_shift($args);
-    $multiline = true;
-} else $multiline = false;
+if($URL === '-') {
+    $handle = STDIN;
+    $buffer = array();
+    if($handle and ftell($handle) === 0)
+        while(!feof($handle))
+            $buffer[] = fread($handle, 1024 * 1024);
+    $content = implode('', $buffer);
+} else @ $content = file_get_contents($URL);
 
-if(isset($args[0]) and $args[0] === '-f') {
-    array_shift($args);
-    $format = true;
-} else $format = false;
+if($MULTILINE) $content = nsplit($content);
+else $content = array($content);
 
-if(!$args) {
-    echo "Invalid argument \$xpath", chr(10);
-    exit(1);
-}
-
-$handle = STDIN;
-$buffer = array();
-if($handle and ftell($handle) === 0)
-    while(!feof($handle))
-        $buffer[] = fread($handle, 1024 * 1024);
-$buffer = implode('', $buffer);
-
-if(!$buffer) exit(1);
-
-if($multiline) $buffer = nsplit($buffer);
-else $buffer = array($buffer);
-
-// -d parameter
-$_ = array();
-$d = false;
-foreach($args as $arg)
-    if($arg === '-d') {
-        $d = true;
-    } elseif($d) {
-        $_[] = "--delimiter={$arg}";
-        $d = false;
-    } else $_[] = $arg;
-
-$args = $_;
-$_args = $args;
-
-foreach($buffer as $content):
-
-$dom = new DOM($content, $format);
-$max = 0;
-$args = $_args;
-array_walk($args, function(& $xpath) use($dom, & $max) {
-    if(strpos($xpath, $_ = '--delimiter=') === 0) {
-        $xpath = substr($xpath, strlen($_));
-        return;
+foreach($content as $_content):
+    $dom = new DOM($_content, $FORMAT);
+    if($REPLACE) {
+        @ $_ = $dom -> replace($XPATHS[0], $LIMIT, $REPLACE);
+        echo $_, "\n";
+        continue;
     }
-    $elem = array();
-    @ $__ = $dom -> find($xpath);
-    if($__) $elem = $__;
-    $xpath = $elem;
-    if(count($xpath) > $max) $max = count($xpath);
-});
-
-for($i = 0; $i < $max; $i++) {
-    $space = false;
-    foreach($args as $arg) {
-        if(!is_array($arg)) echo $arg;
-        elseif(isset($arg[$i])) {
-            if($space) echo " ";
-            echo $arg[$i];
-            $space = true;
-            continue;
-        }
-        $space = false;
+    $found = array();
+    foreach($XPATH as $xpath)
+        @ $found[] = $dom -> find($xpath, $LIMIT);
+    $max = max(array_map('count', $found));
+    for($i = 0; $i < $max; $i++) {
+        foreach($found as $elem) echo @ $elem[$i], ($i < $max - 1 ? $DELIMITER : '');
+        echo "\n";
     }
-    echo chr(10);
-}
-
 endforeach;
+
+exit(0);
+
+help:
+
+echo "Usage: cli-dom [ FLAGS ] [ OPTIONS ] [ LIMIT ] XPATH URL\n";
+echo "FLAGS: [ -m | --multiline ] [ -f | --format ]\n";
+echo "OPTIONS: [ -d DELIMITER | --delimiter DELIMITER ] [ -r XPATH | --replace XPATH ]\n";
+echo "LIMIT: [ --limit N ]\n";
+
+exit(1);
