@@ -22,8 +22,8 @@ use Ejz\DOM;
 
 $yahoo = file_get_contents("http://yahoo.com/");
 $dom = new DOM($yahoo);
-echo $dom -> find('//title', 0), chr(10);
-echo $dom -> find('//title/text()', 0), chr(10);
+echo $dom -> find('//title', 0), "\n";
+echo $dom -> find('//title/text()', 0), "\n";
 ```
 
 ```
@@ -44,16 +44,16 @@ $ curl -sSL 'https://raw.githubusercontent.com/Ejz/DOM/master/i.sh' | sudo bash
 After installation you can execute:
 
 ```bash
-$ echo "<a href=''>Link</a>" | cli-dom '//a/text()'
+$ echo "<a href=''>Link</a>" | cli-dom '//a/text()' -
 Link
-$ echo "<a class='findme' href=''>Find me</a>" | cli-dom '//a[class(findme)]/text()'
+$ echo "<a class='findme'>Find me</a>" | cli-dom '//a[class(findme)]/text()' -
 Find me
 ```
 
 You can use library to prettify some HTML output:
 
 ```bash
-$ wget -q -O - 'https://php.net/' | cli-dom -f '//head'
+$ cli-dom -f '//head' 'https://php.net/'
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
