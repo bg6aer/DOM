@@ -31,10 +31,16 @@ class DOM {
     }
     public function attr($attr) { return $this -> find("//@{$attr}", 0); }
     public function text() { return $this -> find("//text()", 0); }
-    public function count($xpath) { return count($this -> find($xpath)); }
-    public function getList($xpath, $index) {
+    public function count($xpath) {
+        $list = $this -> getList($xpath);
+        $count = 0;
+        foreach($list as $elem)
+            $count += 1;
+        return $count;
+    }
+    public function getList($xpath) {
         if(!$this -> _xpath) return array();
-        if(strpos($xpath, '/') !== 0) {
+        if(strpos($xpath, '/') !== 0 and strpos($xpath, '(') !== 0) {
             _warn(__FUNCTION__, "XPATH ({$xpath}) IS WRONG!");
             return array();
         }
@@ -48,53 +54,74 @@ class DOM {
             'translate($1,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")',
             $xpath
         );
-        if(is_numeric($index)) $xpath .= '[' . (intval($index) + 1) . ']';
         return $this -> _xpath -> query($xpath);
     }
-    public function find($xpath, $index = null, $delete = false) {
-        $list = $this -> getList($xpath, $index);
+    public function find($xpath, $index = null, $replace = null) {
+        if(is_string($index) and preg_match('~^\d+-\d+$~', $index))
+            list($index, $limit) = explode('-', $index);
+        $list = $this -> getList($xpath);
         if(!$list) $list = array();
-        if(is_callable($delete)) {
-            $array = $this -> toArray($list, 0);
+        if(is_string($replace) or is_callable($replace)) {
+            $array = $this -> toArray($list);
             $count = 0; foreach($list as $_) $count += 1;
             if($array and count($array) != $count)
                 _warn(__FUNCTION__, 'INVALID COUNT!');
-            $i = 0;
+            $i = -1;
             foreach($list as $elem) {
-                $_ = $delete($array[$i]);
-                if(preg_match('~^<\w+[^>]*>~', $_)) {
-                    $_ = self::init($_);
-                    $_ = $_ -> getList('//body/*', 0);
-                } elseif($_) $_ = array($this -> _dom -> createTextNode($_));
-                else $_ = array();
-                foreach($_ as $__) { $first = $__; break; }
-                if(isset($first)) {
+                $i += 1;
+                if(is_numeric($index) and !isset($limit) and $i != $index) continue;
+                if(is_numeric($index) and isset($limit) and $i >= $index + $limit) continue;
+                if(is_numeric($index) and isset($limit) and $i < $index) continue;
+                if(is_callable($replace)) {
+                    $_ = $replace($array[$i]);
+                    if(preg_match('~^<\w+[^>]*>~', $_)) {
+                        $_ = self::init($_);
+                        $_ = $_ -> getList('//body/*');
+                    } elseif($_) $_ = array($this -> _dom -> createTextNode($_));
+                    else $_ = array();
+                } else {
+                    $_ = self::init($array[$i]);
+                    @ $_ = $_ -> getList($replace);
+                }
+                if((is_array($_) and $_) or $_ instanceof \DOMNodeList) {
+                    foreach($_ as $__) { $first = $__; break; }
                     $first = $this -> _dom -> importNode($first, true);
                     $elem -> parentNode -> replaceChild($first, $elem);
                 } else $elem -> parentNode -> removeChild($elem);
-                $i += 1;
             }
             return call_user_func_array(array($this, 'find'), array('/*', 0));
-        } elseif($delete) {
-            foreach($list as $elem)
+        } elseif($replace) {
+            $i = -1;
+            foreach($list as $elem) {
+                $i += 1;
+                if(is_numeric($index) and !isset($limit) and $i != $index) continue;
+                if(is_numeric($index) and isset($limit) and $i >= $index + $limit) continue;
+                if(is_numeric($index) and isset($limit) and $i < $index) continue;
                 $elem -> parentNode -> removeChild($elem);
+            }
             return call_user_func_array(array($this, 'find'), array('/*', 0));
         } else {
-            $array = $this -> toArray($list, 0);
-            if(is_null($index)) return $array;
-            return @ $array[$index];
+            $array = $this -> toArray($list);
+            if(is_numeric($index) and !isset($limit))
+                return @ $array[$index];
+            if(is_numeric($index))
+                return array_slice($array, $index, $limit);
+            return $array;
         }
     }
-    public function delete($xpath, $index = null, $callback = null) {
-        return call_user_func_array(array($this, 'find'), array($xpath, $index, is_callable($callback) ? $callback : true));
+    public function replace($xpath, $index = null, $callback = null) {
+        $replace = true;
+        if(is_callable($callback) or is_string($callback))
+            $replace = $callback;
+        return call_user_func_array(array($this, 'find'), array($xpath, $index, $replace));
     }
-    public function replace() {
-        return call_user_func_array(array($this, 'delete'), func_get_args());
+    public function delete() {
+        return call_user_func_array(array($this, 'replace'), func_get_args());
     }
     public function __invoke() {
         return call_user_func_array(array($this, 'find'), func_get_args());
     }
-    private function toArray($node, $level) {
+    private function toArray($node, $level = 0) {
         $formatF = ($this -> _format and $level) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $formatL = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $formatP = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * ($level + 1))) : '';

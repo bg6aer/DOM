@@ -52,14 +52,35 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 <div class="test-delete">
     <span class="cl-one">1</span>
     <span class="cl-two">2</span>
+    <span class="cl-three">3</span>
+    <span class="cl-four">4</span>
 </div>
 </html>
 HTML;
         return $HTML;
     }
+    public function testSliceIndex() {
+        $dom = new DOM($this -> getHTML());
+        $this -> assertTrue(is_array($dom -> find('//div[class(test-delete)]/span')));
+        $this -> assertTrue(count($dom -> find('//div[class(test-delete)]/span')) === 4);
+        $this -> assertTrue(is_array($dom -> find('//div[class(test-delete)]/span', '1-2')));
+        $this -> assertTrue(count($dom -> find('//div[class(test-delete)]/span', '1-2')) === 2);
+        $this -> assertFalse(is_array($dom -> find('//div[class(test-delete)]/span', 0)));
+        $this -> assertTrue(is_string($dom -> find('//div[class(test-delete)]/span', 0)));
+        //
+        $_ = $dom -> find('//div[class(test-delete)]/span', '1-2');
+        $_ = new DOM(implode('', $_));
+        $_ = $_ -> find('//text()');
+        $_ = implode('', $_);
+        $this -> assertEquals($_, '23');
+    }
     public function testHTMLCount() {
         $dom = new DOM($this -> getHTML());
         $this -> assertEquals($dom -> count('/html'), 1);
+    }
+    public function testCount() {
+        $dom = new DOM($this -> getHTML());
+        $this -> assertEquals($dom -> count('//div[class(attr)]'), 1);
     }
     public function testRoot() {
         $dom = new DOM($this -> getHTML());
@@ -100,55 +121,60 @@ HTML;
         $class = $dom -> find('//div[class(get-last)]/a[position()=last()]/@class', 0);
         $this -> assertEquals('last', $class);
     }
-    public function testGetList() {
+    public function testReplace() {
         $dom = new DOM($this -> getHTML());
-        $_ = $dom -> getList('/*', null);
-        $count = 0;
-        foreach($_ as $__) $count += 1;
-        $this -> assertTrue($count === 1);
-        //
-        $dom = new DOM($this -> getHTML());
-        $_ = $dom -> getList('//*', null);
-        $count = 0;
-        foreach($_ as $__) $count += 1;
-        $this -> assertTrue($count > 1);
-        //
-        $dom = new DOM($this -> getHTML());
-        $_ = $dom -> getList('/*', 0);
-        $count = 0;
-        foreach($_ as $__) $count += 1;
-        $this -> assertTrue($count === 1);
-        //
-        $dom = new DOM($this -> getHTML());
-        $_ = $dom -> getList('/*', 100);
-        $count = 0;
-        foreach($_ as $__) $count += 1;
-        $this -> assertTrue($count === 0);
-    }
-    public function testDelete() {
-        //
-        $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/*[class(cl-one)]');
+        $html = $dom -> replace('//div[class(test-delete)]/*[class(cl-one)]');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', 0);
+        $html = $dom -> replace('//div[class(test-delete)]/span', 0);
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/span/text()', 0);
         $this -> assertEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', 1);
+        $html = $dom -> replace('//div[class(test-delete)]/span', 1);
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/span/text()', 0);
         $this -> assertEquals('1', $_);
-    }
-    public function testDeleteCallback() {
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', 0, function($string) {
+        $html = $dom -> replace('//div[class(test-delete)]/span', '1-2');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/span/text()');
+        $_ = implode('', $_);
+        $this -> assertEquals('14', $_);
+    }
+    public function testReplaceString() {
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', 0, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', 1, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1234', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('23', $_);
+    }
+    public function testReplaceCallback() {
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', 0, function($string) {
             return $string;
         });
         $dom = new DOM($html);
@@ -158,7 +184,7 @@ HTML;
         $this -> assertEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             return $string;
         });
         $dom = new DOM($html);
@@ -168,7 +194,7 @@ HTML;
         $this -> assertEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', 1, function($string) {
+        $html = $dom -> replace('//div[class(test-delete)]/span', 1, function($string) {
             return '';
         });
         $dom = new DOM($html);
@@ -178,7 +204,7 @@ HTML;
         $this -> assertNotEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $count = $dom -> count('//*[@class="cl-one"]');
             if($count) return $string;
@@ -191,7 +217,7 @@ HTML;
         $this -> assertNotEquals('2', $_);
         //
         $dom = new DOM($this -> getHTML());
-        $html = $dom -> delete('//div[class(test-delete)]/span', null, function($string) {
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $text = $dom -> find('//text()', 0);
             return $text;
@@ -202,7 +228,21 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertNotEquals('2', $_);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
-        $this -> assertEquals('12', $_);
+        $this -> assertEquals('1234', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', function($string) {
+            $dom = DOM::init($string);
+            $text = $dom -> find('//text()', 0);
+            return $text;
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('23', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-four)]/text()', 0);
+        $this -> assertEquals('4', $_);
     }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";

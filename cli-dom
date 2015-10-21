@@ -11,28 +11,39 @@ $opts = getopts(array(
     'f' => false, 'format' => false,
     'd' => true, 'delimiter' => true,
     'r' => true, 'replace' => true,
-    'limit' => true
+    'l' => true, 'limit' => true,
+    'i' => true, 'index' => true,
 ));
 
 if($opts === array()) goto help;
+$LIMIT = ''; $INDEX = '';
 
-@ $MULTILINE = ($opts['m'] or @ $opts['multiline']);
-@ $FORMAT = ($opts['f'] or @ $opts['format']);
-@ ($DELIMITER = $opts['d']) or @ ($DELIMITER = $opts['delimiter']);
-$DELIMITER = $DELIMITER ? $DELIMITER : ',';
+@ ($MULTILINE = $opts['m']) or @ ($MULTILINE = $opts['multiline']);
+@ ($FORMAT = $opts['f']) or @ ($FORMAT = $opts['format']);
 @ ($REPLACE = $opts['r']) or @ ($REPLACE = $opts['replace']);
-@ $LIMIT = is_numeric($opts['limit']) ? intval($opts['limit']) : null;
+if(isset($opts['d']) and is_string($opts['d']))
+    $DELIMITER = $opts['d'];
+if(isset($opts['delimiter']) and is_string($opts['delimiter']))
+    $DELIMITER = $opts['delimiter'];
+if(isset($opts['l']) and is_numeric($opts['l']))
+    $LIMIT = intval($opts['l']);
+if(isset($opts['limit']) and is_numeric($opts['limit']))
+    $LIMIT = intval($opts['limit']);
+if(isset($opts['i']) and is_numeric($opts['i']))
+    $INDEX = intval($opts['i']);
+if(isset($opts['index']) and is_numeric($opts['index']))
+    $INDEX = intval($opts['index']);
+
+@ $DELIMITER = $DELIMITER ? $DELIMITER : ',';
+if(is_numeric($INDEX) and !is_numeric($LIMIT)) $LIMIT = 1;
+if(is_numeric($LIMIT) and !is_numeric($INDEX)) $INDEX = 0;
 $URL = $opts[max(array_keys($opts))];
 $XPATH = array();
 for($i = 1; $i < max(array_keys($opts)); $i++)
     $XPATH[] = $opts[$i];
 
 if(!$XPATH) goto help;
-
-if($REPLACE and count($XPATH) > 1) {
-    echo "If you use replace, you should use just one search XPATH\n";
-    exit(1);
-}
+if($REPLACE and count($XPATH) > 1) goto help;
 
 if($URL === '-') {
     $handle = STDIN;
@@ -49,16 +60,23 @@ else $content = array($content);
 foreach($content as $_content):
     $dom = new DOM($_content, $FORMAT);
     if($REPLACE) {
-        @ $_ = $dom -> replace($XPATHS[0], $LIMIT, $REPLACE);
+        @ $_ = $dom -> replace($XPATH[0], ($LIMIT ? "{$INDEX}-{$LIMIT}" : $INDEX), $REPLACE);
         echo $_, "\n";
         continue;
     }
+    // continue;
     $found = array();
-    foreach($XPATH as $xpath)
-        @ $found[] = $dom -> find($xpath, $LIMIT);
+    foreach($XPATH as $xpath) {
+        @ $_ = $dom -> find($xpath);
+        if(!is_numeric($INDEX) and !is_numeric($LIMIT))
+            $found[] = $_;
+        else $found[] = array_slice($_, $INDEX, $LIMIT);
+    }
     $max = max(array_map('count', $found));
+    if(is_numeric($LIMIT) and $max > $LIMIT) $max = $LIMIT;
     for($i = 0; $i < $max; $i++) {
-        foreach($found as $elem) echo @ $elem[$i], ($i < $max - 1 ? $DELIMITER : '');
+        for($j = 0; $j < count($found); $j++)
+            echo @ $found[$j][$i], ($j < count($found) - 1 ? $DELIMITER : '');
         echo "\n";
     }
 endforeach;
@@ -67,9 +85,17 @@ exit(0);
 
 help:
 
-echo "Usage: cli-dom [ FLAGS ] [ OPTIONS ] [ LIMIT ] XPATH URL\n";
-echo "FLAGS: [ -m | --multiline ] [ -f | --format ]\n";
-echo "OPTIONS: [ -d DELIMITER | --delimiter DELIMITER ] [ -r XPATH | --replace XPATH ]\n";
-echo "LIMIT: [ --limit N ]\n";
+ob_start();
+echo "Usage: cli-dom [ FLAGS ] [ OPTIONS ] XPATHS URL\n";
+echo "FLAGS:\n";
+echo "    [ -m | --multiline ] - input is said to be multiline\n";
+echo "    [ -f | --format ] - prettify output\n";
+echo "OPTIONS:\n";
+echo "    [ -d DELIMITER | --delimiter DELIMITER ] - delimiter of results in output\n";
+echo "    [ -i INDEX | --index INDEX ] - output from INDEX item\n";
+echo "    [ -l LIMIT | --limit LIMIT ] - limit items in output starting with LIMIT\n";
+echo "    [ -r XPATH | --replace XPATH ] - perform replace operation\n";
+$ob = ob_get_clean();
+fwrite(STDERR, $ob);
 
 exit(1);
