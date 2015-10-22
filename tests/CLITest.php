@@ -90,5 +90,53 @@ class CLITest extends PHPUnit_Framework_TestCase {
         $this -> assertEquals(2, $_ -> count('//body/span'));
         $this -> assertEquals($_ -> find('//body/span/text()', 0), '-2-');
         $this -> assertEquals($_ -> find('//body/span/text()', 1), '-3-');
+        //
+        $_ = `cat tests/test.html | ./cli-dom -i 1 -l 2 -r '' '//div[class(selector)]' -`;
+        $_ = DOM::init($_);
+        $this -> assertEquals(0, $_ -> count('//body/span'));
+        $this -> assertEquals($_ -> find('//body//div[class(selector)]/span/text()', 0), '-1-');
+        $this -> assertEquals($_ -> find('//body//div[class(selector)]/span/text()', 2), '-4-');
+        //
+        $_ = `cat tests/test.html | ./cli-dom -r '' '//div[class(selector)]' -`;
+        $_ = DOM::init($_);
+        $this -> assertEquals(0, $_ -> count('//div[class(selector)]'));
+    }
+    public function testBugWithSpanReplace() {
+        $temp = rtrim(`mktemp`);
+        file_put_contents($temp, <<<DATA
+             <tr>
+                <td class="blob-code blob-code-inner">
+                <span class="pl-c1">
+                        <em>
+                            RTMP
+                        </em>
+                        _Log
+                    </span>
+                    <span><em>!</em></span>
+                    <span class="pl-s">
+                        <span class="pl-pds">
+                            "
+                        </span>
+                        Setup
+                        <em>
+                            URL
+                        </em>
+                        Err
+                        <span class="pl-cce">
+                            !
+                        </span>
+                        <span class="pl-pds">
+                            "
+                        </span>
+                        <span class="pl-pds"></span>
+                        <span class="pl-pds"> </span>
+                    </span>
+                </td>
+            </tr>
+DATA
+        );
+        $_ = `cat {$temp} | ./cli-dom -r '//text()' '//span' -`;
+        $this -> assertTrue(strpos($_, '<span') === false);
+        $this -> assertTrue(strpos($_, 'RTMP!') !== false);
     }
 }

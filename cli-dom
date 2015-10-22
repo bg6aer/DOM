@@ -16,11 +16,14 @@ $opts = getopts(array(
 ));
 
 if($opts === array()) goto help;
-$LIMIT = ''; $INDEX = '';
+$LIMIT = ''; $INDEX = ''; $REPLACE = null;
 
 @ ($MULTILINE = $opts['m']) or @ ($MULTILINE = $opts['multiline']);
 @ ($FORMAT = $opts['f']) or @ ($FORMAT = $opts['format']);
-@ ($REPLACE = $opts['r']) or @ ($REPLACE = $opts['replace']);
+if(isset($opts['r']) and is_string($opts['r']))
+    $REPLACE = $opts['r'];
+if(isset($opts['replace']) and is_string($opts['replace']))
+    $REPLACE = $opts['replace'];
 if(isset($opts['d']) and is_string($opts['d']))
     $DELIMITER = $opts['d'];
 if(isset($opts['delimiter']) and is_string($opts['delimiter']))
@@ -43,7 +46,7 @@ for($i = 1; $i < max(array_keys($opts)); $i++)
     $XPATH[] = $opts[$i];
 
 if(!$XPATH) goto help;
-if($REPLACE and count($XPATH) > 1) goto help;
+if(is_string($REPLACE) and count($XPATH) > 1) goto help;
 
 if($URL === '-') {
     $handle = STDIN;
@@ -59,7 +62,7 @@ else $content = array($content);
 
 foreach($content as $_content):
     $dom = new DOM($_content, $FORMAT);
-    if($REPLACE) {
+    if(is_string($REPLACE)) {
         @ $_ = $dom -> replace($XPATH[0], ($LIMIT ? "{$INDEX}-{$LIMIT}" : $INDEX), $REPLACE);
         echo $_, "\n";
         continue;

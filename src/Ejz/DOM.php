@@ -15,6 +15,7 @@ class DOM {
         if(!is_string($html)) $html = "<html></html>";
         $html = trim($html);
         if(!$html) $html = "<html></html>";
+        $html = str_replace(chr(0), '', $html);
         $prefix = '<' . '?xml version="1.0" encoding="UTF-8"?' . '>';
         if(strpos($html, '<' . '?xml') === 0) ;
         else $html = $prefix . chr(10) . $html . chr(10);
@@ -40,10 +41,7 @@ class DOM {
     }
     public function getList($xpath) {
         if(!$this -> _xpath) return array();
-        if(strpos($xpath, '/') !== 0 and strpos($xpath, '(') !== 0) {
-            _warn(__FUNCTION__, "XPATH ({$xpath}) IS WRONG!");
-            return array();
-        }
+        if(strpos($xpath, '/') !== 0 and strpos($xpath, '(') !== 0) return array();
         $xpath = preg_replace(
             '~class\((?P<class>.*?)\)~i',
             'contains(concat(" ",normalize-space(@class)," ")," $1 ")',
@@ -83,7 +81,7 @@ class DOM {
                     $_ = self::init($array[$i]);
                     @ $_ = $_ -> getList($replace);
                 }
-                if((is_array($_) and $_) or $_ instanceof \DOMNodeList) {
+                if((is_array($_) and $_) or ($_ instanceof \DOMNodeList and $_ -> length)) {
                     foreach($_ as $__) { $first = $__; break; }
                     $first = $this -> _dom -> importNode($first, true);
                     $elem -> parentNode -> replaceChild($first, $elem);
