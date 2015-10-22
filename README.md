@@ -64,6 +64,10 @@ $ cli-dom -f '//head' 'https://php.net/'
 </head>
 ```
 
+### Examples
+
+http://ejz.ru/91/obrabotka-html-dannykh
+
 ### CI: Codeship
 
 [![Codeship Status for Ejz/DOM](https://codeship.com/projects/bcd7db20-6abb-0132-5494-2e0b75730361/status)](https://codeship.com/projects/53779)
