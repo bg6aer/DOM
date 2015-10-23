@@ -71,7 +71,8 @@ foreach($content as $_content):
     $found = array();
     foreach($XPATH as $xpath) {
         @ $_ = $dom -> find($xpath);
-        if(!is_numeric($INDEX) and !is_numeric($LIMIT))
+        if(!is_array($_)) $found[] = array($_);
+        elseif(!is_numeric($INDEX) and !is_numeric($LIMIT))
             $found[] = $_;
         else $found[] = array_slice($_, $INDEX, $LIMIT);
     }

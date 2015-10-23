@@ -101,6 +101,10 @@ class CLITest extends PHPUnit_Framework_TestCase {
         $_ = DOM::init($_);
         $this -> assertEquals(0, $_ -> count('//div[class(selector)]'));
     }
+    public function testBugWithEvaluate() {
+        $_ = `cat tests/test.html | ./cli-dom 'concat("1", "2")' -`;
+        $this -> assertEquals('12', rtrim($_));
+    }
     public function testBugWithSpanReplace() {
         $temp = rtrim(`mktemp`);
         file_put_contents($temp, <<<DATA
