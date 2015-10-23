@@ -92,6 +92,19 @@ HTML;
         $dom = new DOM($this -> getHTML());
         $this -> assertEquals($dom -> find("//a[@href='findme.html']/text()", 0), "Регистрация");
     }
+    public function testConcat() {
+        $dom = new DOM($this -> getHTML());
+        $concat = $dom -> find("concat('1','2')", 0);
+        $this -> assertTrue($concat === "12");
+        //
+        $dom = new DOM($this -> getHTML());
+        $concat = $dom -> find("concat(//*[@id='a1']/@id,'_',//*[@id='a2']/@id)");
+        $this -> assertTrue($concat === "a1_a2");
+        //
+        $dom = new DOM($this -> getHTML());
+        $concat = $dom -> find("(concat(//*[@id='a1']/@id,'_',//*[@id='a2']/@id))");
+        $this -> assertTrue($concat === "a1_a2");
+    }
     public function testEscape() {
         $dom = new DOM($this -> getHTML());
         $escape = $dom -> find("//div[class(escape)]/span/text()");
@@ -171,6 +184,12 @@ HTML;
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('23', $_);
+        //
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, 'concat(" ",count(./*)," ")');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1111', $_);
     }
     public function testReplaceCallback() {
         $dom = new DOM($this -> getHTML());

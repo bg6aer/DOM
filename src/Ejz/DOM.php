@@ -7,6 +7,7 @@ class DOM {
     private $_dom = null;
     private $_xpath = null;
     private $_format = false;
+    private $_evaluate = 'string-join,boolean,ceiling,choose,concat,contains,count,current,document,element-available,false,floor,format-number,function-available,generate-id,id,key,lang,last,local-name,name,namespace-uri,normalize-space,not,number,position,round,starts-with,string,string-length,substring,substring-after,substring-before,sum,system-property,translate,true,unparsed-entity-url';
     public function __construct($html = '', $format = false) {
         self::init($html, $format, $this);
     }
@@ -51,6 +52,17 @@ class DOM {
             'translate($1,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")',
             $xpath
         );
+        $evaluate = explode(',', $this -> _evaluate);
+        $isEvaluate = function($xpath) use($evaluate) {
+            $xpath = preg_replace('~".*?"~', '', $xpath);
+            $xpath = preg_replace('~\'.*?\'~', '', $xpath);
+            foreach($evaluate as $_)
+                if(strpos($xpath, "({$_}(") === 0 or strpos($xpath, "{$_}(") === 0)
+                    return true;
+            return false;
+        };
+        if($isEvaluate($xpath))
+            return $this -> _xpath -> evaluate($xpath);
         return $this -> _xpath -> query($xpath);
     }
     public function find($xpath, $index = null, $replace = null) {
@@ -79,6 +91,8 @@ class DOM {
                 } else {
                     $_ = self::init($array[$i]);
                     @ $_ = $_ -> getList($replace);
+                    if(is_string($_) or is_numeric($_))
+                        $_ = array($this -> _dom -> createTextNode($_ . ''));
                 }
                 if((is_array($_) and $_) or ($_ instanceof \DOMNodeList and $_ -> length)) {
                     foreach($_ as $__) { $first = $__; break; }
@@ -99,10 +113,14 @@ class DOM {
             return call_user_func_array(array($this, 'find'), array('/*', 0));
         } else {
             $array = $this -> toArray($list);
-            if(is_numeric($index) and !isset($limit))
+            if(is_numeric($index) and !isset($limit) and is_array($array))
                 return @ $array[$index];
-            if(is_numeric($index))
+            if(is_numeric($index) and !isset($limit))
+                return $array;
+            if(is_numeric($index) and is_array($array))
                 return array_slice($array, $index, $limit);
+            if(is_numeric($index))
+                return $array;
             return $array;
         }
     }
@@ -126,9 +144,11 @@ class DOM {
         if(!$node) return array();
         if($node instanceof \DOMAttr) return $node -> value;
         if($node instanceof \DOMNodeList) {
-            foreach($node as $n) $array[] = $this -> toArray($n, $level);
+            foreach($node as $n)
+                $array[] = $this -> toArray($n, $level);
             return $array;
         }
+        if(is_string($node)) return $node;
         if($node -> nodeType == XML_TEXT_NODE) {
             $_ = trim($node -> nodeValue);
             if(!$_ and !is_numeric($_)) return '';
