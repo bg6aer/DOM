@@ -41,7 +41,6 @@ class DOM {
     }
     public function getList($xpath) {
         if(!$this -> _xpath) return array();
-        if(strpos($xpath, '/') !== 0 and strpos($xpath, '(') !== 0) return array();
         $xpath = preg_replace(
             '~class\((?P<class>.*?)\)~i',
             'contains(concat(" ",normalize-space(@class)," ")," $1 ")',
