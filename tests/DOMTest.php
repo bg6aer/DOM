@@ -263,6 +263,14 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-four)]/text()', 0);
         $this -> assertEquals('4', $_);
     }
+    public function testBugWithWhiteSpace() {
+        $html = "<div> \t\n  <p> \t\n  1 \t\n  </p></div>";
+        $dom = new DOM($html);
+        $this -> assertTrue($dom -> find('//div//text()', 0) === ' ');
+        $this -> assertTrue($dom -> find('//div//text()', 1) === '1');
+        //
+        $dom = new DOM($html);
+    }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";
         $dom = new DOM($HTML);
