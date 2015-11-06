@@ -161,6 +161,37 @@ HTML;
         $this -> assertEquals('14', $_);
     }
     public function testReplaceString() {
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $html = $dom -> replace('//div[class(test-delete)]/span', 0, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1', $_);
+        //
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $html = $dom -> replace('//div[class(test-delete)]/span', 1, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('2', $_);
+        //
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1234', $_);
+        //
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', '//text()');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('23', $_);
+        //
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, 'concat(" ",count(./*)," ")');
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1111', $_);
+    }
+    public function testReplaceStringWithWS() {
         $dom = new DOM($this -> getHTML());
         $html = $dom -> replace('//div[class(test-delete)]/span', 0, '//text()');
         $dom = new DOM($html);
@@ -171,28 +202,12 @@ HTML;
         $html = $dom -> replace('//div[class(test-delete)]/span', 1, '//text()');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals(' ', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 1);
         $this -> assertEquals('2', $_);
-        //
-        $dom = new DOM($this -> getHTML());
-        $html = $dom -> replace('//div[class(test-delete)]/span', null, '//text()');
-        $dom = new DOM($html);
-        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
-        $this -> assertEquals('1234', $_);
-        //
-        $dom = new DOM($this -> getHTML());
-        $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', '//text()');
-        $dom = new DOM($html);
-        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
-        $this -> assertEquals('23', $_);
-        //
-        $dom = new DOM($this -> getHTML());
-        $html = $dom -> replace('//div[class(test-delete)]/span', null, 'concat(" ",count(./*)," ")');
-        $dom = new DOM($html);
-        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
-        $this -> assertEquals('1111', $_);
     }
     public function testReplaceCallback() {
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', 0, function($string) {
             return $string;
         });
@@ -202,7 +217,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             return $string;
         });
@@ -212,7 +227,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', 1, function($string) {
             return '';
         });
@@ -222,7 +237,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertNotEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $count = $dom -> count('//*[@class="cl-one"]');
@@ -235,7 +250,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertNotEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $text = $dom -> find('//text()', 0);
@@ -249,7 +264,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1234', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
         $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', function($string) {
             $dom = DOM::init($string);
             $text = $dom -> find('//text()', 0);
@@ -262,6 +277,21 @@ HTML;
         $this -> assertEquals('23', $_);
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-four)]/text()', 0);
         $this -> assertEquals('4', $_);
+    }
+    public function testReplaceCallbackWithWS() {
+        $dom = new DOM($this -> getHTML());
+        $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
+            $dom = DOM::init($string);
+            $text = $dom -> find('//text()', 0);
+            return $text;
+        });
+        $dom = new DOM($html);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
+        $this -> assertNotEquals('1', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
+        $this -> assertNotEquals('2', $_);
+        $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
+        $this -> assertEquals('1 2 3 4', $_);
     }
     public function testBugWithWhiteSpace() {
         $html = "<div> \t\n  <p> \t\n  1 \t\n  </p></div>";
@@ -289,7 +319,7 @@ HTML;
     }
     public function testBugWithZeroFormat() {
         $HTML = "<div> 0 </div>";
-        $dom = new DOM($HTML, true);
+        $dom = new DOM($HTML, array('format' => true));
         $div = $dom -> find('//div', 0);
         $nl = chr(10);
         $this -> assertTrue($div === "<div>{$nl}    0{$nl}</div>");
@@ -306,13 +336,21 @@ HTML;
         $this -> assertTrue($attr === "<&>");
     }
     public function testFormat() {
-        $dom = new DOM($this -> getHTML(), true);
+        $dom = new DOM($this -> getHTML(), array('format' => true));
         $_ = $dom -> find('//div', 0);
         $this -> assertTrue(strpos($_, '    <span>') !== false);
         $this -> assertTrue(strpos($_, '<div') !== false);
     }
+    public function testFormatEmpty() {
+        $dom = new DOM("<div><p></p><p> </p><p>\n\n\n</p><p> text </p></div>", array('format' => true));
+        $_ = $dom -> find('//p');
+        $this -> assertEquals($_[0], '<p></p>');
+        $this -> assertEquals($_[1], "<p>\n</p>");
+        $this -> assertEquals($_[2], "<p>\n</p>");
+        $this -> assertEquals($_[3], "<p>\n    text\n</p>");
+    }
     public function testBugWithFormatComment() {
-        $dom = new DOM($this -> getHTML(), true);
+        $dom = new DOM($this -> getHTML(), array('format' => true));
         $_ = $dom -> find('//div[class(get-last)]', 0);
         $CMP = <<<CMP
 <div class="get-last">
@@ -327,7 +365,7 @@ CMP;
         $this -> assertEquals($CMP, $_);
     }
     public function testBugWithMultilineComment() {
-        $dom = new DOM($this -> getHTML(), true);
+        $dom = new DOM($this -> getHTML(), array('format' => true));
         $_ = $dom -> find('//div[class(multiline-comment)]', 0);
         $CMP = <<<CMP
 <div class="multiline-comment">

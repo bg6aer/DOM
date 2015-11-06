@@ -110,7 +110,7 @@ class CLITest extends PHPUnit_Framework_TestCase {
         file_put_contents($temp, <<<DATA
              <tr>
                 <td class="blob-code blob-code-inner">
-                <span class="pl-c1">
+                    <span class="pl-c1">
                         <em>
                             RTMP
                         </em>
@@ -139,7 +139,7 @@ class CLITest extends PHPUnit_Framework_TestCase {
             </tr>
 DATA
         );
-        $_ = `cat {$temp} | ./cli-dom -r '//text()' '//span' -`;
+        $_ = `cat {$temp} | ./cli-dom -n -r '//text()' '//span' -`;
         $this -> assertTrue(strpos($_, '<span') === false);
         $this -> assertTrue(strpos($_, 'RTMP!') !== false);
     }

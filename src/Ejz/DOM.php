@@ -7,11 +7,15 @@ class DOM {
     private $_dom = null;
     private $_xpath = null;
     private $_format = false;
+    private $_no_empty = false;
+    private $_settings = array();
     private $_evaluate = 'string-join,boolean,ceiling,choose,concat,contains,count,current,document,element-available,false,floor,format-number,function-available,generate-id,id,key,lang,last,local-name,name,namespace-uri,normalize-space,not,number,position,round,starts-with,string,string-length,substring,substring-after,substring-before,sum,system-property,translate,true,unparsed-entity-url';
-    public function __construct($html = '', $format = false) {
-        self::init($html, $format, $this);
+    public function __construct($html = '', $settings = array('format' => false, 'no-empty' => false)) {
+        self::init($html, $settings, $this);
     }
-    public static function init($html, $format = false, $pointer = null) {
+    public static function init($html, $settings = array('format' => false, 'no-empty' => false), $pointer = null) {
+        @ $format = $settings['format'];
+        @ $no_empty = $settings['no-empty'];
         if(is_null($pointer)) $pointer = new self();
         if(!is_string($html)) $html = "<html></html>";
         $html = trim($html);
@@ -28,7 +32,10 @@ class DOM {
         libxml_clear_errors();
         $pointer -> _dom = $dom;
         $pointer -> _format = $format;
+        $pointer -> _no_empty = $no_empty;
+        $pointer -> _settings = $settings;
         $pointer -> _xpath = new \DOMXpath($pointer -> _dom);
+        $pointer -> _dom -> normalizeDocument();
         return $pointer;
     }
     public function attr($attr) { return $this -> find("//@{$attr}", 0); }
@@ -84,12 +91,12 @@ class DOM {
                 if(is_callable($replace)) {
                     $_ = $replace($array[$i]);
                     if(preg_match('~^<\w+[^>]*>~', $_)) {
-                        $_ = self::init($_);
+                        $_ = self::init($_, $this -> _settings);
                         $_ = $_ -> getList('//body/*');
                     } elseif($_) $_ = array($this -> _dom -> createTextNode($_));
                     else $_ = array();
                 } else {
-                    $_ = self::init($array[$i]);
+                    $_ = self::init($array[$i], $this -> _settings);
                     @ $_ = $_ -> getList($replace);
                     if(is_string($_) or is_numeric($_))
                         $_ = array($this -> _dom -> createTextNode($_ . ''));
@@ -140,6 +147,7 @@ class DOM {
         $formatF = ($this -> _format and $level) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $formatL = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * $level)) : '';
         $formatP = ($this -> _format) ? (chr(10) . str_repeat(' ', 4 * ($level + 1))) : '';
+        $formatNL = ($this -> _format) ? chr(10) : ' ';
         $array = array();
         if(!$node) return array();
         if($node instanceof \DOMAttr) return $node -> value;
@@ -151,6 +159,8 @@ class DOM {
         if(is_string($node)) return $node;
         if($node -> nodeType == XML_TEXT_NODE) {
             $_ = trim($node -> nodeValue);
+            if(!$_ and !is_numeric($_) and $node -> nodeValue and !$this -> _no_empty)
+                return $formatNL;
             if(!$_ and !is_numeric($_)) return '';
             $_ = preg_replace('~\s+~', ' ', $_);
             if($level) return $formatF . esc($_);
@@ -180,14 +190,18 @@ class DOM {
         if($node -> hasChildNodes())
             foreach($node -> childNodes as $childNode) {
                 $t = $this -> toArray($childNode, $level + 1);
+                // if($t === chr(10) and $inner)
                 if($t or $t === '0') $inner[] = $t;
             }
         $attr = implode('', $attr);
         $inner = implode('', $inner);
+        $inner = str_replace(chr(10) . chr(10), chr(10), $inner);
         $is_numeric = is_numeric($inner);
         if(!$inner and !$is_numeric and in_array($tag, explode(',', 'br,img,hr,param,meta')))
             return sprintf($closed, $attr);
         if(!$inner and !$is_numeric) return sprintf($collectorE, $attr);
-        return sprintf($collector, $attr, $inner);
+        if($inner === chr(10)) return sprintf($collector, $attr, '');
+        $_ = sprintf($collector, $attr, $inner);
+        return str_replace(chr(10) . chr(10), chr(10), $_);
     }
 }

@@ -9,6 +9,7 @@ use Ejz\DOM;
 $opts = getopts(array(
     'm' => false, 'multiline' => false,
     'f' => false, 'format' => false,
+    'n' => false, 'no-empty' => false,
     'd' => true, 'delimiter' => true,
     'r' => true, 'replace' => true,
     'l' => true, 'limit' => true,
@@ -20,6 +21,7 @@ $LIMIT = ''; $INDEX = ''; $REPLACE = null;
 
 @ ($MULTILINE = $opts['m']) or @ ($MULTILINE = $opts['multiline']);
 @ ($FORMAT = $opts['f']) or @ ($FORMAT = $opts['format']);
+@ ($NO_EMPTY = $opts['n']) or @ ($NO_EMPTY = $opts['no-empty']);
 if(isset($opts['r']) and is_string($opts['r']))
     $REPLACE = $opts['r'];
 if(isset($opts['replace']) and is_string($opts['replace']))
@@ -61,7 +63,7 @@ if($MULTILINE) $content = nsplit($content);
 else $content = array($content);
 
 foreach($content as $_content):
-    $dom = new DOM($_content, $FORMAT);
+    $dom = new DOM($_content, array('format' => $FORMAT, 'no-empty' => $NO_EMPTY));
     if(is_string($REPLACE)) {
         @ $_ = $dom -> replace($XPATH[0], ($LIMIT ? "{$INDEX}-{$LIMIT}" : $INDEX), $REPLACE);
         echo $_, "\n";
@@ -94,6 +96,7 @@ echo "Usage: cli-dom [ FLAGS ] [ OPTIONS ] XPATHS URL\n";
 echo "FLAGS:\n";
 echo "    [ -m | --multiline ] - input is said to be multiline\n";
 echo "    [ -f | --format ] - prettify output\n";
+echo "    [ -n | --no-empty ] - ignore text nodes that contain only whitespace\n";
 echo "OPTIONS:\n";
 echo "    [ -d DELIMITER | --delimiter DELIMITER ] - delimiter of results in output\n";
 echo "    [ -i INDEX | --index INDEX ] - output from INDEX item\n";
