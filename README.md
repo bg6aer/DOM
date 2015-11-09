@@ -66,7 +66,7 @@ $ cli-dom -f '//head' 'https://php.net/'
 
 ### Examples
 
-http://ejz.ru/91/obrabotka-html-dannykh
+http://ejz.ru/91/obrabotka-html-dannykh <br>
 https://gist.github.com/Ejz/6de001e06c1b1797a7bd
 
 ### CI: Codeship
