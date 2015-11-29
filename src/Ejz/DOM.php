@@ -29,6 +29,7 @@ class DOM {
         $pointer -> html = $html;
         $dom = new \DOMDocument();
         $dom -> preserveWhiteSpace = false;
+        if(!$trim) $dom -> preserveWhiteSpace = true;
         libxml_use_internal_errors(true);
         $dom -> loadHTML($pointer -> html);
         libxml_clear_errors();
