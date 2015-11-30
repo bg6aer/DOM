@@ -10,6 +10,7 @@ $opts = getopts(array(
     'm' => false, 'multiline' => false,
     'f' => false, 'format' => false,
     'n' => false, 'no-empty' => false,
+    't' => false, 'trim' => false,
     'd' => true, 'delimiter' => true,
     'r' => true, 'replace' => true,
     'l' => true, 'limit' => true,
@@ -22,6 +23,7 @@ $LIMIT = ''; $INDEX = ''; $REPLACE = null;
 @ ($MULTILINE = $opts['m']) or @ ($MULTILINE = $opts['multiline']);
 @ ($FORMAT = $opts['f']) or @ ($FORMAT = $opts['format']);
 @ ($NO_EMPTY = $opts['n']) or @ ($NO_EMPTY = $opts['no-empty']);
+@ ($TRIM = $opts['t']) or @ ($TRIM = $opts['trim']);
 if(isset($opts['r']) and is_string($opts['r']))
     $REPLACE = $opts['r'];
 if(isset($opts['replace']) and is_string($opts['replace']))
@@ -63,7 +65,7 @@ if($MULTILINE) $content = nsplit($content);
 else $content = array($content);
 
 foreach($content as $_content):
-    $dom = new DOM($_content, array('format' => $FORMAT, 'no-empty' => $NO_EMPTY));
+    $dom = new DOM($_content, array('format' => $FORMAT, 'no-empty' => $NO_EMPTY, 'trim' => $TRIM));
     if(is_string($REPLACE)) {
         @ $_ = $dom -> replace($XPATH[0], ($LIMIT ? "{$INDEX}-{$LIMIT}" : $INDEX), $REPLACE);
         echo $_, "\n";

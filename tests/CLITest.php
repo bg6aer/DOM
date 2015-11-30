@@ -139,7 +139,7 @@ class CLITest extends PHPUnit_Framework_TestCase {
             </tr>
 DATA
         );
-        $_ = `cat {$temp} | ./cli-dom -n -r '//text()' '//span' -`;
+        $_ = `cat {$temp} | ./cli-dom -n -t -r '//text()' '//span' -`;
         $this -> assertTrue(strpos($_, '<span') === false);
         $this -> assertTrue(strpos($_, 'RTMP!') !== false);
     }

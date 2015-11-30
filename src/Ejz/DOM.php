@@ -11,13 +11,13 @@ class DOM {
     private $_no_empty = false;
     private $_settings = array();
     private $_evaluate = 'string-join,boolean,ceiling,choose,concat,contains,count,current,document,element-available,false,floor,format-number,function-available,generate-id,id,key,lang,last,local-name,name,namespace-uri,normalize-space,not,number,position,round,starts-with,string,string-length,substring,substring-after,substring-before,sum,system-property,translate,true,unparsed-entity-url';
-    public function __construct($html = '', $settings = array('format' => false, 'no-empty' => false, 'trim' => true)) {
+    public function __construct($html = '', $settings = array('format' => false, 'no-empty' => false, 'trim' => false)) {
         self::init($html, $settings, $this);
     }
-    public static function init($html, $settings = array('format' => false, 'no-empty' => false, 'trim' => true), $pointer = null) {
+    public static function init($html, $settings = array('format' => false, 'no-empty' => false, 'trim' => false), $pointer = null) {
         @ $format = isset($settings['format']) ? $settings['format'] : false;
         @ $no_empty = isset($settings['no-empty']) ? $settings['no-empty'] : false;
-        @ $trim = isset($settings['trim']) ? $settings['trim'] : true;
+        @ $trim = isset($settings['trim']) ? $settings['trim'] : false;
         if(is_null($pointer)) $pointer = new self();
         if(!is_string($html)) $html = "<html></html>";
         $html = trim($html);
@@ -156,19 +156,22 @@ class DOM {
         if(!$node) return array();
         if($node instanceof \DOMAttr) return $node -> value;
         if($node instanceof \DOMNodeList) {
-            foreach($node as $n)
-                $array[] = $this -> toArray($n, $level);
+            foreach($node as $n) {
+                $_ = $this -> toArray($n, $level);
+                if($this -> _no_empty and !$_) ;
+                else $array[] = $_;
+            }
             return $array;
         }
         if(is_string($node)) return $node;
         if($node -> nodeType == XML_TEXT_NODE) {
-            if($this -> _trim)
+            if($this -> _trim or $this -> _format)
                 $_ = trim($node -> nodeValue);
             else $_ = $node -> nodeValue;
             if(!$_ and !is_numeric($_) and $node -> nodeValue and !$this -> _no_empty)
                 return $formatNL;
             if(!$_ and !is_numeric($_)) return '';
-            if($this -> _trim)
+            if($this -> _trim or $this -> _format)
                 $_ = preg_replace('~\s+~', ' ', $_);
             if($level) return $formatF . esc($_);
             else return $_;

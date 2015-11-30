@@ -13,7 +13,7 @@ class DOMTest extends PHPUnit_Framework_TestCase {
 <head>
 <meta equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<a href="findme.html"> Регистрация </a>
+<a href="findme.html"> Регистрация  </a>
 <div class="class1 escape class2">
     <span> &lt;&amp;&gt; </span>
     <span> asd > asd asd & </span>
@@ -90,7 +90,7 @@ HTML;
     }
     public function testEncoding() {
         $dom = new DOM($this -> getHTML());
-        $this -> assertEquals($dom -> find("//a[@href='findme.html']/text()", 0), "Регистрация");
+        $this -> assertEquals($dom -> find("//a[@href='findme.html']/text()", 0), " Регистрация  ");
     }
     public function testConcat() {
         $dom = new DOM($this -> getHTML());
@@ -106,7 +106,7 @@ HTML;
         $this -> assertTrue($concat === "a1_a2");
     }
     public function testEscape() {
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('trim' => true));
         $escape = $dom -> find("//div[class(escape)]/span/text()");
         $this -> assertEquals($escape[0], "<&>");
         $this -> assertEquals($escape[1], "asd > asd asd &");
@@ -161,53 +161,53 @@ HTML;
         $this -> assertEquals('14', $_);
     }
     public function testReplaceString() {
-        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 0, '//text()');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 1, '//text()');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, '//text()');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1234', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', '//text()');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('23', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => true));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => true, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, 'concat(" ",count(./*)," ")');
         $dom = new DOM($html);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1111', $_);
     }
     public function testReplaceStringWithWS() {
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 0, '//text()');
-        $dom = new DOM($html);
+        $dom = new DOM($html, array('trim' => true));
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1', $_);
         //
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 1, '//text()');
-        $dom = new DOM($html);
+        $dom = new DOM($html, array('trim' => true));
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals(' ', $_);
         $_ = $dom -> find('//div[class(test-delete)]/text()', 1);
         $this -> assertEquals('2', $_);
     }
     public function testReplaceCallback() {
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 0, function($string) {
             return $string;
         });
@@ -217,7 +217,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             return $string;
         });
@@ -227,7 +227,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', 1, function($string) {
             return '';
         });
@@ -237,7 +237,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertNotEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $count = $dom -> count('//*[@class="cl-one"]');
@@ -250,7 +250,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
         $this -> assertNotEquals('2', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
             $dom = DOM::init($string);
             $text = $dom -> find('//text()', 0);
@@ -264,7 +264,7 @@ HTML;
         $_ = $dom -> find('//div[class(test-delete)]/text()', 0);
         $this -> assertEquals('1234', $_);
         //
-        $dom = new DOM($this -> getHTML(), array('no-empty' => 1));
+        $dom = new DOM($this -> getHTML(), array('no-empty' => 1, 'trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', '1-2', function($string) {
             $dom = DOM::init($string);
             $text = $dom -> find('//text()', 0);
@@ -279,13 +279,13 @@ HTML;
         $this -> assertEquals('4', $_);
     }
     public function testReplaceCallbackWithWS() {
-        $dom = new DOM($this -> getHTML());
+        $dom = new DOM($this -> getHTML(), array('trim' => true));
         $html = $dom -> replace('//div[class(test-delete)]/span', null, function($string) {
-            $dom = DOM::init($string);
+            $dom = DOM::init($string, array('trim' => true));
             $text = $dom -> find('//text()', 0);
             return $text;
         });
-        $dom = new DOM($html);
+        $dom = new DOM($html, array('trim' => true));
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-one)]/text()', 0);
         $this -> assertNotEquals('1', $_);
         $_ = $dom -> find('//div[class(test-delete)]/*[class(cl-two)]/text()', 0);
@@ -295,27 +295,33 @@ HTML;
     }
     public function testBugWithWhiteSpace() {
         $html = "<div> \t\n  <p> \t\n  1 \t\n  </p></div>";
-        $dom = new DOM($html);
-        $this -> assertTrue($dom -> find('//div//text()', 0) === ' ');
-        $this -> assertTrue($dom -> find('//div//text()', 1) === '1');
         //
-        $dom = new DOM($html);
+        $dom = new DOM($html, array('trim' => true, 'no-empty' => false));
+        $this -> assertEquals(' ', $dom -> find('//div//text()', 0));
+        $this -> assertEquals('1', $dom -> find('//div//text()', 1));
+        //
+        $dom = new DOM($html, array('trim' => false, 'no-empty' => false));
+        $this -> assertEquals(" \t\n  ", $dom -> find('//div//text()', 0));
+        $this -> assertEquals(" \t\n  1 \t\n  ", $dom -> find('//div//text()', 1));
+        //
+        $dom = new DOM($html, array('trim' => true, 'no-empty' => true));
+        $this -> assertEquals("1", $dom -> find('//div//text()', 0));
     }
     public function testBugWithZero() {
         $HTML = "<div> 0 </div>";
         $dom = new DOM($HTML);
         $div = $dom -> find('//div', 0);
-        $this -> assertTrue($div === "<div>0</div>");
+        $this -> assertTrue($div === "<div> 0 </div>");
         //
         $HTML = "<div> 000 </div>";
         $dom = new DOM($HTML);
         $div = $dom -> find('//div', 0);
-        $this -> assertTrue($div === "<div>000</div>");
+        $this -> assertTrue($div === "<div> 000 </div>");
         //
         $HTML = "<div> 0.0 </div>";
         $dom = new DOM($HTML);
         $div = $dom -> find('//div', 0);
-        $this -> assertTrue($div === "<div>0.0</div>");
+        $this -> assertTrue($div === "<div> 0.0 </div>");
     }
     public function testBugWithZeroFormat() {
         $HTML = "<div> 0 </div>";
